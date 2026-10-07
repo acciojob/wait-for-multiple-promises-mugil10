@@ -1,5 +1,11 @@
 const output = document.getElementById("output");
 
+output.innerHTML = `
+  <tr>
+    <td colspan="2">Loading...</td>
+  </tr>
+`;
+
 function createPromise() {
   const startTime = performance.now();
   const delay = Math.floor(Math.random() * 3) + 1;
@@ -7,53 +13,35 @@ function createPromise() {
   return new Promise(function(resolve) {
     setTimeout(function() {
       const endTime = performance.now();
-      const actualTime = (endTime - startTime) / 1000;
+      const timeTaken = (endTime - startTime) / 1000;
 
-      resolve({
-        delay: delay,
-        actualTime: actualTime
-      });
+      resolve(timeTaken);
     }, delay * 1000);
   });
 }
-
-const startTime = performance.now();
 
 const promise1 = createPromise();
 const promise2 = createPromise();
 const promise3 = createPromise();
 
-Promise.all([promise1, promise2, promise3])
-  .then(function(results) {
-    const totalTime = (performance.now() - startTime) / 1000;
+Promise.all([promise1, promise2, promise3]).then(function(results) {
+  output.innerHTML = "";
 
-    output.innerHTML = "";
-
-    results.forEach(function(result, index) {
-      const row = document.createElement("tr");
-
-      const promiseCell = document.createElement("td");
-      promiseCell.textContent = "Promise " + (index + 1);
-
-      const timeCell = document.createElement("td");
-      timeCell.textContent = result.delay;
-
-      row.appendChild(promiseCell);
-      row.appendChild(timeCell);
-
-      output.appendChild(row);
-    });
-
-    const totalRow = document.createElement("tr");
-
-    const totalCell = document.createElement("td");
-    totalCell.textContent = "Total";
-
-    const totalTimeCell = document.createElement("td");
-    totalTimeCell.textContent = totalTime.toFixed(3);
-
-    totalRow.appendChild(totalCell);
-    totalRow.appendChild(totalTimeCell);
-
-    output.appendChild(totalRow);
+  results.forEach(function(time, index) {
+    output.innerHTML += `
+      <tr>
+        <td>Promise ${index + 1}</td>
+        <td>${time.toFixed(3)}</td>
+      </tr>
+    `;
   });
+
+  const totalTime = Math.max(...results);
+
+  output.innerHTML += `
+    <tr>
+      <td>Total</td>
+      <td>${totalTime.toFixed(3)}</td>
+    </tr>
+  `;
+});
